@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}denied — {{ name }}{% endblock %}
+{% block content %}
+  <h1>{{ name }}</h1>
+  {% if error %}
+    <p>Could not read this database: {{ error }}</p>
+  {% elif tables %}
+    <ul>
+      {% for table in tables %}
+        <li>{{ table }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>This database has no tables.</p>
+  {% endif %}
+  <p><a href="{{ url_for('main.index') }}">← all databases</a></p>
+{% endblock %}

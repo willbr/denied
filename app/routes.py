@@ -1,6 +1,8 @@
+import sqlite3
+
 from flask import Blueprint, abort, current_app, render_template
 
-from app.databases import list_databases
+from app.databases import list_databases, list_tables
 
 main = Blueprint("main", __name__)
 
@@ -17,5 +19,13 @@ def index():
 
 @main.route("/db/<name>/")
 def database(name: str):
-    # Stub — real implementation lands in Task 7.
-    abort(501)
+    db_dir = current_app.config["DB_DIR"]
+    if name not in list_databases(db_dir):
+        abort(404)
+
+    try:
+        tables = list_tables(db_dir / name)
+    except sqlite3.DatabaseError as exc:
+        return render_template("database.html", name=name, error=str(exc))
+
+    return render_template("database.html", name=name, tables=tables)
