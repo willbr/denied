@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from app.databases import list_databases
+from app.databases import list_databases, list_tables
 
 
 def _make_sqlite_file(path: Path) -> None:
@@ -54,3 +54,33 @@ def test_list_databases_returns_empty_when_path_is_a_file(tmp_path):
     f = tmp_path / "a-file.sqlite"
     _make_sqlite_file(f)
     assert list_databases(f) == []
+
+
+def test_list_tables_returns_user_tables_sorted(tmp_path):
+    db = tmp_path / "data.sqlite"
+    conn = sqlite3.connect(db)
+    try:
+        conn.execute("CREATE TABLE zebra (id INTEGER)")
+        conn.execute("CREATE TABLE apple (id INTEGER)")
+        conn.execute("CREATE TABLE mango (id INTEGER)")
+    finally:
+        conn.close()
+
+    assert list_tables(db) == ["apple", "mango", "zebra"]
+
+
+def test_list_tables_returns_empty_for_database_with_no_tables(tmp_path):
+    db = tmp_path / "empty.sqlite"
+    # Touch a connection so the file becomes a valid (empty) SQLite db.
+    conn = sqlite3.connect(db)
+    conn.close()
+
+    assert list_tables(db) == []
+
+
+def test_list_tables_raises_database_error_on_corrupt_file(tmp_path):
+    db = tmp_path / "corrupt.db"
+    db.write_bytes(b"not a database")
+
+    with pytest.raises(sqlite3.DatabaseError):
+        list_tables(db)
