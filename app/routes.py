@@ -23,8 +23,14 @@ def database(name: str):
     if name not in list_databases(db_dir):
         abort(404)
 
+    db_path = db_dir / name
+    # Guard against a race where the file vanishes between listing and open —
+    # sqlite3.connect would otherwise create an empty file in DB_DIR.
+    if not db_path.is_file():
+        abort(404)
+
     try:
-        tables = list_tables(db_dir / name)
+        tables = list_tables(db_path)
     except sqlite3.DatabaseError as exc:
         return render_template("database.html", name=name, error=str(exc))
 
