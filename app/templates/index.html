@@ -1,8 +1,14 @@
 {% extends "base.html" %}
-
-{% block title %}denied — sqlite editor{% endblock %}
-
+{% block title %}denied — databases{% endblock %}
 {% block content %}
-  <h1>denied</h1>
-  <p>A web-based SQLite editor. Not yet built — this is a placeholder.</p>
+  <h1>databases</h1>
+  {% if databases %}
+    <ul>
+      {% for name in databases %}
+        <li><a href="{{ url_for('main.database', name=name) }}">{{ name }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No databases found in <code>{{ db_dir }}</code>.</p>
+  {% endif %}
 {% endblock %}
